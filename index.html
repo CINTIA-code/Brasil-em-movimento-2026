@@ -5,9 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#C90018">
-  <meta name="description" content="Crie sua foto personalizada com moldura vermelha, amarela e a mensagem pela democracia.">
-
-  <title>Lula 13 | Pela Democracia</title>
+  <meta name="description" content="Crie sua foto personalizada com moldura vermelha e amarela.">
+  <title>Brasil em Movimento | Pela Democracia</title>
 
   <style>
     :root {
@@ -40,9 +39,8 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(30px, 9vw, 43px);
+      font-size: clamp(25px, 7vw, 38px);
       font-weight: 900;
-      letter-spacing: -1px;
     }
 
     h1 span {
@@ -56,7 +54,6 @@
       line-height: 1.5;
     }
 
-    /* Área vertical otimizada para celulares */
     .stage {
       position: relative;
       width: 100%;
@@ -126,7 +123,6 @@
       line-height: 1.05;
       text-transform: uppercase;
       overflow-wrap: anywhere;
-      text-shadow: 1px 2px #500006;
     }
 
     .democracy {
@@ -150,7 +146,6 @@
       font-size: clamp(17px, 5.4vw, 25px);
       font-weight: 900;
       line-height: 1.15;
-      overflow-wrap: anywhere;
     }
 
     .signature {
@@ -179,11 +174,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    button:focus-visible {
-      outline: 3px solid var(--white);
-      outline-offset: 3px;
-    }
-
     button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -201,6 +191,10 @@
 
     .wide {
       grid-column: 1 / -1;
+    }
+
+    #galleryInput {
+      display: none;
     }
 
     #status {
@@ -242,13 +236,15 @@
 
 <body>
   <main class="container">
-    <h1>LULA <span>13</span></h1>
+
+    <h1>BRASIL EM <span>MOVIMENTO</span></h1>
 
     <p class="subtitle">
       Pela democracia. Pelo Brasil. ❤️
     </p>
 
     <div class="stage" id="stage">
+
       <video
         id="camera"
         autoplay
@@ -259,22 +255,42 @@
 
       <img
         id="photo"
-        alt="Foto personalizada com moldura da campanha"
+        alt="Foto personalizada com moldura"
       >
 
       <div class="overlay" aria-hidden="true">
-        <div class="top-banner">★ LULA • 13 ★</div>
+
+        <div class="top-banner">
+          ★ LULA • 13 ★
+        </div>
 
         <div class="bottom-banner">
-          <p class="hope"> Brasil em movimento </p>
-          <p class="democracy">Pela democracia</p>
-          <div class="final-slogan">AGORA É LULA</div>
-          <p class="signature">BRASIL • DEMOCRACIA</p>
+          <p class="hope">Esperança</p>
+
+          <p class="democracy">
+            Pela democracia
+          </p>
+
+          <div class="final-slogan">
+            AGORA É LULA
+          </div>
+
+          <p class="signature">
+            BRASIL • DEMOCRACIA
+          </p>
         </div>
+
       </div>
     </div>
 
+    <input
+      id="galleryInput"
+      type="file"
+      accept="image/*"
+    >
+
     <div class="controls">
+
       <button class="primary" id="start">
         📷 Abrir câmera
       </button>
@@ -283,30 +299,35 @@
         ✨ Tirar foto
       </button>
 
-      <button class="secondary" id="retake">
+      <button class="secondary" id="choosePhoto">
+        🖼️ Usar foto da galeria
+      </button>
+
+      <button class="primary" id="retake">
         🔄 Nova foto
       </button>
 
       <button class="primary" id="download">
-        ⬇ Salvar foto
+        ⬇ Baixar foto pronta
       </button>
 
-      <button class="primary wide" id="share">
+      <button class="secondary" id="share">
         ↗ Compartilhar foto
       </button>
+
     </div>
 
     <p id="status" role="status" aria-live="polite">
-      Toque em “Abrir câmera” e autorize o acesso.
+      Escolha abrir a câmera ou usar uma foto que já está no celular.
     </p>
 
     <p class="instructions">
-      Para usar, abra esta página no Safari ou Chrome.
-      Você pode salvar a imagem e publicá-la nos Stories.
-      A câmera só será ativada com sua autorização.
+      Funciona em iPhone e Android nos navegadores compatíveis.
+      Escolha uma foto, confira a moldura e baixe a imagem pronta.
     </p>
 
     <canvas id="canvas"></canvas>
+
   </main>
 
   <script>
@@ -314,15 +335,15 @@
     const photo = document.getElementById("photo");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    const stage = document.getElementById("stage");
     const status = document.getElementById("status");
+    const galleryInput = document.getElementById("galleryInput");
 
     let stream = null;
     let photoReady = false;
-    let photoBlob = null;
 
     const startButton = document.getElementById("start");
     const captureButton = document.getElementById("capture");
+    const chooseButton = document.getElementById("choosePhoto");
     const retakeButton = document.getElementById("retake");
     const downloadButton = document.getElementById("download");
     const shareButton = document.getElementById("share");
@@ -341,11 +362,12 @@
     }
 
     async function startCamera() {
-      if (!navigator.mediaDevices ||
-          !navigator.mediaDevices.getUserMedia) {
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
         setStatus(
-          "A câmera precisa de HTTPS. Abra o endereço publicado " +
-          doGitHubPages() + " no Safari ou Chrome."
+          "A câmera precisa de HTTPS. Abra o site publicado no Safari ou Chrome."
         );
         return;
       }
@@ -370,37 +392,59 @@
         camera.style.display = "block";
         photo.style.display = "none";
         photoReady = false;
-        photoBlob = null;
 
         setStatus(
           "Câmera aberta! Posicione-se e toque em Tirar foto."
         );
+
       } catch (error) {
         stopCamera();
 
         if (error.name === "NotAllowedError") {
           setStatus(
-            "O acesso à câmera foi negado. Autorize a câmera " +
-            "nas configurações do navegador."
+            "Acesso à câmera negado. Autorize nas configurações do navegador."
           );
-        } else if (error.name === "NotFoundError") {
-          setStatus("Não encontramos uma câmera disponível.");
         } else {
           setStatus(
-            "Não foi possível abrir a câmera. Tente no Safari " +
-            "ou Chrome e confira as permissões."
+            "Não foi possível abrir a câmera. Tente no Safari ou Chrome."
           );
         }
       }
     }
 
-    function drawCoverMirrored(video, width, height) {
-      const sourceWidth = video.videoWidth;
-      const sourceHeight = video.videoHeight;
+    function setCanvasSize(sourceWidth, sourceHeight) {
+      const ratio = 9 / 16;
 
-      // Recorta a imagem para o formato vertical 9:16,
-      // preenchendo a área sem esticar o rosto.
-      const targetRatio = width / height;
+      let width = sourceWidth;
+      let height = sourceHeight;
+
+      // Ajusta a imagem para um formato vertical.
+      if (width / height > ratio) {
+        width = Math.round(height * ratio);
+      } else {
+        height = Math.round(width / ratio);
+      }
+
+      // Limita a resolução para evitar consumo excessivo de memória.
+      const maxHeight = 2560;
+
+      if (height > maxHeight) {
+        const scale = maxHeight / height;
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    function drawCover(
+      source,
+      sourceWidth,
+      sourceHeight,
+      mirrored = false
+    ) {
+      const targetRatio = canvas.width / canvas.height;
       const sourceRatio = sourceWidth / sourceHeight;
 
       let cropWidth = sourceWidth;
@@ -417,13 +461,23 @@
       }
 
       ctx.save();
-      ctx.translate(width, 0);
-      ctx.scale(-1, 1);
+
+      // Espelha apenas a câmera frontal, não fotos da galeria.
+      if (mirrored) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
 
       ctx.drawImage(
-        video,
-        cropX, cropY, cropWidth, cropHeight,
-        0, 0, width, height
+        source,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        canvas.width,
+        canvas.height
       );
 
       ctx.restore();
@@ -433,9 +487,10 @@
       const w = canvas.width;
       const h = canvas.height;
 
-      // Moldura externa
+      // Moldura externa vermelha.
       ctx.strokeStyle = "#ff2538";
       ctx.lineWidth = Math.max(8, w * 0.012);
+
       ctx.strokeRect(
         ctx.lineWidth / 2,
         ctx.lineWidth / 2,
@@ -443,7 +498,7 @@
         h - ctx.lineWidth
       );
 
-      // Faixa superior
+      // Faixa superior.
       const topHeight = h * 0.105;
 
       ctx.fillStyle = "#c90018";
@@ -451,6 +506,7 @@
 
       ctx.strokeStyle = "#ffd83d";
       ctx.lineWidth = Math.max(3, w * 0.004);
+
       ctx.strokeRect(
         w * 0.035,
         topHeight * 0.12,
@@ -463,14 +519,21 @@
       ctx.fillStyle = "#ffffff";
       ctx.font = `900 ${Math.round(w * 0.075)}px Arial`;
 
-      ctx.fillText("★ LULA • 13 ★", w / 2, topHeight * 0.50);
+      ctx.fillText(
+        "★ LULA • 13 ★",
+        w / 2,
+        topHeight * 0.50
+      );
 
-      // Área inferior
+      // Fundo da área inferior.
       const bottomHeight = h * 0.275;
       const bottomY = h - bottomHeight;
 
       const gradient = ctx.createLinearGradient(
-        0, bottomY - h * 0.06, 0, h
+        0,
+        bottomY - h * 0.06,
+        0,
+        h
       );
 
       gradient.addColorStop(0, "rgba(133,0,13,0)");
@@ -478,18 +541,31 @@
       gradient.addColorStop(1, "#85000d");
 
       ctx.fillStyle = gradient;
-      ctx.fillRect(0, bottomY - h * 0.06, w, bottomHeight + h * 0.06);
 
-      // Textos ajustados para não ultrapassar as laterais
+      ctx.fillRect(
+        0,
+        bottomY - h * 0.06,
+        w,
+        bottomHeight + h * 0.06
+      );
+
+      // Esperança.
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-
       ctx.fillStyle = "#ffd83d";
       ctx.font = `900 ${Math.round(w * 0.085)}px Arial`;
-      ctx.fillText("ESPERANÇA", w / 2, bottomY + bottomHeight * 0.20);
 
+      ctx.fillText(
+        "ESPERANÇA",
+        w / 2,
+        bottomY + bottomHeight * 0.20,
+        w * 0.92
+      );
+
+      // Pela democracia.
       ctx.fillStyle = "#ffffff";
       ctx.font = `900 ${Math.round(w * 0.065)}px Arial`;
+
       ctx.fillText(
         "PELA DEMOCRACIA",
         w / 2,
@@ -497,14 +573,14 @@
         w * 0.92
       );
 
-      // Faixa amarela: AGORA É LULA
+      // Faixa amarela: Agora é Lula.
       const finalText = "AGORA É LULA";
-      const finalFont = Math.round(w * 0.064);
       const finalY = bottomY + bottomHeight * 0.64;
       const boxHeight = bottomHeight * 0.20;
       const boxWidth = w * 0.76;
 
       ctx.fillStyle = "#ffd83d";
+
       ctx.fillRect(
         (w - boxWidth) / 2,
         finalY - boxHeight / 2,
@@ -513,7 +589,8 @@
       );
 
       ctx.fillStyle = "#85000d";
-      ctx.font = `900 ${finalFont}px Arial`;
+      ctx.font = `900 ${Math.round(w * 0.064)}px Arial`;
+
       ctx.fillText(
         finalText,
         w / 2,
@@ -521,9 +598,10 @@
         boxWidth - w * 0.04
       );
 
-      // Assinatura
+      // Assinatura inferior.
       ctx.fillStyle = "#ffffff";
       ctx.font = `800 ${Math.round(w * 0.030)}px Arial`;
+
       ctx.fillText(
         "BRASIL • DEMOCRACIA",
         w / 2,
@@ -532,39 +610,21 @@
       );
     }
 
-    function capturePhoto() {
-      if (!stream || !camera.videoWidth) {
-        setStatus("Abra a câmera primeiro e aguarde a imagem.");
-        return;
-      }
+    function renderPhoto(
+      source,
+      sourceWidth,
+      sourceHeight,
+      mirrored = false
+    ) {
+      setCanvasSize(sourceWidth, sourceHeight);
 
-      // Resolução de saída proporcional ao formato vertical.
-      // O limite evita consumo excessivo de memória no celular.
-      const sourceW = camera.videoWidth;
-      const sourceH = camera.videoHeight;
-      const ratio = 9 / 16;
+      drawCover(
+        source,
+        sourceWidth,
+        sourceHeight,
+        mirrored
+      );
 
-      let outputW = sourceW;
-      let outputH = sourceH;
-
-      if (outputW / outputH > ratio) {
-        outputW = Math.round(outputH * ratio);
-      } else {
-        outputH = Math.round(outputW / ratio);
-      }
-
-      const maxHeight = 2560;
-
-      if (outputH > maxHeight) {
-        const scale = maxHeight / outputH;
-        outputW = Math.round(outputW * scale);
-        outputH = Math.round(outputH * scale);
-      }
-
-      canvas.width = outputW;
-      canvas.height = outputH;
-
-      drawCoverMirrored(camera, outputW, outputH);
       drawCampaignFrame();
 
       photo.src = canvas.toDataURL("image/jpeg", 0.94);
@@ -572,30 +632,99 @@
       camera.style.display = "none";
 
       photoReady = true;
-      photoBlob = null;
 
       stopCamera();
 
-      canvas.toBlob(blob => {
-        photoBlob = blob;
-      }, "image/jpeg", 0.94);
-
-      setStatus("Foto pronta! Salve ou compartilhe sua imagem.");
+      setStatus(
+        "Foto pronta com a moldura! Você pode baixar ou compartilhar."
+      );
     }
 
+    // Opção 1: tirar foto pela câmera.
+    function capturePhoto() {
+      if (!stream || !camera.videoWidth) {
+        setStatus(
+          "Abra a câmera primeiro ou escolha uma foto da galeria."
+        );
+        return;
+      }
+
+      renderPhoto(
+        camera,
+        camera.videoWidth,
+        camera.videoHeight,
+        true
+      );
+    }
+
+    // Opção 2: escolher foto da galeria.
+    function chooseGalleryPhoto() {
+      galleryInput.value = "";
+      galleryInput.click();
+    }
+
+    galleryInput.addEventListener("change", event => {
+      const file = event.target.files &&
+                   event.target.files[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        setStatus("Escolha um arquivo de imagem.");
+        return;
+      }
+
+      const image = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      image.onload = () => {
+        try {
+          renderPhoto(
+            image,
+            image.naturalWidth,
+            image.naturalHeight,
+            false
+          );
+        } catch (error) {
+          setStatus(
+            "Não consegui abrir essa foto. Tente escolher outra imagem."
+          );
+        } finally {
+          URL.revokeObjectURL(objectUrl);
+        }
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+
+        setStatus(
+          "Não foi possível ler essa foto. Tente uma imagem JPG ou PNG."
+        );
+      };
+
+      image.src = objectUrl;
+    });
+
+    // Recomeçar usando a câmera.
     function retakePhoto() {
+      photoReady = false;
       startCamera();
     }
 
+    // Baixar a imagem pronta.
     function downloadPhoto() {
       if (!photoReady) {
-        setStatus("Tire uma foto antes de salvar.");
+        setStatus(
+          "Tire uma foto ou escolha uma imagem da galeria primeiro."
+        );
         return;
       }
 
       canvas.toBlob(blob => {
         if (!blob) {
-          setStatus("Não foi possível gerar a imagem. Tente novamente.");
+          setStatus(
+            "Não foi possível gerar a imagem. Tente novamente."
+          );
           return;
         }
 
@@ -604,20 +733,25 @@
 
         link.href = url;
         link.download = "minha-foto-pela-democracia.jpg";
+
         document.body.appendChild(link);
         link.click();
         link.remove();
 
-        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+
         setStatus(
-          "Imagem preparada! Confira seus Downloads ou Fotos."
+          "Foto pronta para salvar! Confira Downloads ou Fotos."
         );
       }, "image/jpeg", 0.94);
     }
 
+    // Compartilhar usando os recursos do dispositivo.
     async function sharePhoto() {
       if (!photoReady) {
-        setStatus("Tire uma foto antes de compartilhar.");
+        setStatus(
+          "Tire uma foto ou escolha uma imagem da galeria primeiro."
+        );
         return;
       }
 
@@ -647,25 +781,25 @@
             setStatus("Compartilhamento aberto.");
           } else {
             downloadPhoto();
+
             setStatus(
-              "Seu navegador não oferece compartilhamento direto " +
-              "de imagens. A foto será baixada para você publicar."
+              "A foto foi baixada. Agora você pode publicá-la no Instagram."
             );
           }
         } catch (error) {
           if (error.name !== "AbortError") {
-            setStatus("Tente salvar a imagem e anexá-la ao Instagram.");
+            setStatus(
+              "Tente baixar a imagem e anexá-la ao Instagram."
+            );
           }
         }
       }, "image/jpeg", 0.94);
     }
 
-    function doGitHubPages() {
-      return "o endereço HTTPS do seu GitHub Pages";
-    }
-
+    // Eventos dos botões.
     startButton.addEventListener("click", startCamera);
     captureButton.addEventListener("click", capturePhoto);
+    chooseButton.addEventListener("click", chooseGalleryPhoto);
     retakeButton.addEventListener("click", retakePhoto);
     downloadButton.addEventListener("click", downloadPhoto);
     shareButton.addEventListener("click", sharePhoto);
