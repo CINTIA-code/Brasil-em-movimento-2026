@@ -2,686 +2,752 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#09090d">
-<title>Brasil em Movimento | Editor Criativo</title>
-<style>
-:root {
-  --red:#f20d2f;
-  --darkred:#85000d;
-  --yellow:#ffd83d;
-  --bg:#09090d;
-  --panel:#15151d;
-  --muted:#a8adbb;
-}
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  padding:24px 14px 40px;
-  padding-top:max(24px,env(safe-area-inset-top));
-  background:
-    radial-gradient(ellipse at 50% 0%,#45101c 0%,transparent 48%),
-    var(--bg);
-  color:white;
-  font-family:Inter,system-ui,-apple-system,sans-serif;
-}
-.container { width:100%; max-width:460px; margin:auto; }
-.brand {
-  color:var(--yellow);
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:3px;
-  text-align:center;
-}
-h1 {
-  text-align:center;
-  font-size:clamp(30px,8vw,42px);
-  line-height:1;
-  letter-spacing:-1.5px;
-  margin:13px 0;
-}
-h1 span { color:var(--yellow); }
-.subtitle {
-  text-align:center;
-  color:#bfc2ce;
-  font-size:13px;
-  margin:0 0 22px;
-}
-.stage-wrap {
-  padding:2px;
-  border-radius:19px;
-  background:linear-gradient(135deg,var(--red),var(--yellow),var(--red));
-  box-shadow:0 0 30px #f20d2f20,0 20px 60px #0008;
-}
-.stage {
-  position:relative;
-  width:100%;
-  aspect-ratio:9/16;
-  overflow:hidden;
-  border:4px solid #111119;
-  border-radius:17px;
-  background:#111119;
-  touch-action:pan-y;
-}
-.stage.editing { touch-action:none; cursor:grab; }
-.stage.editing:active { cursor:grabbing; }
-#camera,#photo {
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-#camera { transform:scaleX(-1); }
-#photo { display:none; pointer-events:none; }
-.hint {
-  position:absolute;
-  z-index:3;
-  top:48%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  padding:10px 14px;
-  border:1px solid #ffffff40;
-  border-radius:30px;
-  background:#09090ddd;
-  font-size:11px;
-  white-space:nowrap;
-  pointer-events:none;
-}
-.overlay {
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  padding:3% 3% 4%;
-  pointer-events:none;
-}
-.top {
-  padding:3% 1%;
-  border:2px solid var(--yellow);
-  background:var(--red);
-  text-align:center;
-  font-size:clamp(20px,6vw,31px);
-  font-weight:950;
-  white-space:nowrap;
-  text-shadow:1px 2px #65000a;
-}
-.bottom {
-  margin:0 -3% -4%;
-  padding:9% 4% 5%;
-  text-align:center;
-  background:linear-gradient(
-    to bottom,
-    transparent 0%,
-    #85000dbd 25%,
-    #85000df5 65%,
-    #85000d 100%
-  );
-}
-.hope {
-  margin:0;
-  color:var(--yellow);
-  font-size:clamp(23px,7.3vw,36px);
-  font-weight:950;
-  line-height:1.05;
-}
-.democracy {
-  margin:6px 0 13px;
-  font-size:clamp(19px,5.8vw,29px);
-  font-weight:900;
-}
-.slogan {
-  display:block;
-  width:92%;
-  margin:0 auto 12px;
-  padding:9px 5px;
-  background:var(--yellow);
-  color:var(--darkred);
-  font-size:clamp(17px,5.3vw,25px);
-  font-weight:950;
-}
-.signature {
-  margin:0;
-  font-size:clamp(10px,3vw,14px);
-  font-weight:800;
-  letter-spacing:2px;
-}
-.editor {
-  margin-top:16px;
-  padding:16px;
-  border:1px solid #ffffff18;
-  border-radius:18px;
-  background:linear-gradient(145deg,#1b1b26,#111117);
-  box-shadow:0 10px 35px #0004;
-}
-.editor-title {
-  margin:0 0 5px;
-  font-size:13px;
-  font-weight:900;
-  letter-spacing:.5px;
-}
-.editor-help {
-  margin:0 0 16px;
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.5;
-}
-.zoom-row {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  color:#ddd;
-  font-size:11px;
-  font-weight:800;
-}
-input[type=range] {
-  width:100%;
-  min-width:0;
-  accent-color:var(--yellow);
-}
-button {
-  min-height:48px;
-  padding:12px 10px;
-  border:1px solid #ffffff15;
-  border-radius:12px;
-  font:800 13px system-ui,sans-serif;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-button:active { transform:scale(.98); }
-button:focus-visible { outline:2px solid white; }
-.primary {
-  background:linear-gradient(135deg,#ffe56b,#ffd02c);
-  color:#430009;
-}
-.secondary { background:#252530; color:white; }
-.accent {
-  background:linear-gradient(135deg,#ff2342,#c90018);
-  color:white;
-  box-shadow:0 5px 20px #f20d2f25;
-}
-.controls {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-  margin-top:12px;
-}
-.wide { grid-column:1/-1; }
-#galleryInput,#canvas { display:none; }
-#status {
-  min-height:40px;
-  margin:14px 2px;
-  color:#ffe6a0;
-  font-size:12px;
-  line-height:1.5;
-}
-.note {
-  color:#969aaa;
-  font-size:11px;
-  line-height:1.6;
-}
-@media(max-width:350px) {
-  body { padding-left:9px; padding-right:9px; }
-  button { font-size:11px; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ed101c">
+  <meta name="description" content="Brasil em Movimento 2026">
+  <title>Brasil em Movimento 2026</title>
+
+  <style>
+    :root {
+      --red: #ed101c;
+      --yellow: #ffe52b;
+      --black: #111;
+      --white: #fffaf0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #171717;
+      color: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 28px 18px 18px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      color: var(--yellow);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 10px 0 6px;
+      font-size: clamp(30px, 8vw, 52px);
+      line-height: .95;
+      font-weight: 1000;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+    }
+
+    h1 span { color: var(--red); }
+
+    header p {
+      color: #c8c8c8;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(100% - 28px, 540px);
+      margin: 0 auto 40px;
+    }
+
+    .editor {
+      padding: 16px;
+      border: 1px solid #393939;
+      border-radius: 18px;
+      background: #222;
+    }
+
+    .section-label {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .photo-buttons,
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    button,
+    .upload-button {
+      min-height: 46px;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-button {
+      background: #393939;
+      color: white;
+    }
+
+    .yellow-button {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    .red-button {
+      background: var(--red);
+      color: white;
+    }
+
+    .dark-button {
+      background: #393939;
+      color: white;
+    }
+
+    input[type="file"] { display: none; }
+
+    .preview-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 18px 0 10px;
+    }
+
+    .preview-title p {
+      margin: 0;
+      color: #bdbdbd;
+      font-size: 11px;
+    }
+
+    .poster-frame {
+      overflow: hidden;
+      width: 100%;
+      border: 3px solid var(--yellow);
+      border-radius: 5px;
+      background: var(--red);
+      box-shadow: 0 10px 40px #0008;
+    }
+
+    #poster {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 9 / 16;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .hint {
+      margin: 10px 0 18px;
+      color: #c5c5c5;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .zoom-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .zoom-row label {
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--yellow);
+    }
+
+    .actions { margin-top: 12px; }
+    .actions button { width: 100%; }
+    .wide { grid-column: 1 / -1; }
+
+    .status {
+      min-height: 18px;
+      margin: 12px 0 0;
+      color: var(--yellow);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      padding: 10px 8px 28px;
+      color: #929292;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .footer strong { color: var(--yellow); }
+
+    @media (max-width: 360px) {
+      .editor { padding: 11px; }
+      button, .upload-button { font-size: 12px; }
+    }
+  </style>
 </head>
+
 <body>
-<main class="container">
+  <header>
+    <div class="eyebrow">Uma voz. Um país. Um futuro.</div>
+    <h1>Brasil em <span>movimento</span></h1>
+    <p>Coloque sua foto na colagem e compartilhe sua mensagem.</p>
+  </header>
 
-  <p class="brand">✦ EDITOR CRIATIVO • BRASIL 2026 ✦</p>
-  <h1>BRASIL EM<br><span>MOVIMENTO</span></h1>
-  <p class="subtitle">Sua foto. Sua posição. Sua mensagem.</p>
+  <main>
+    <section class="editor">
+      <p class="section-label">01 — Escolha sua foto</p>
 
-  <div class="stage-wrap">
-    <div class="stage" id="stage">
-      <video id="camera" autoplay playsinline muted></video>
-      <img id="photo" alt="Prévia da foto editada">
-      <div class="hint" id="hint">✥ Sua foto aparecerá aqui</div>
-
-      <div class="overlay">
-        <div class="top">★ LULA • 13 ★</div>
-        <div class="bottom">
-          <p class="hope">ESPERANÇA</p>
-          <p class="democracy">PELA DEMOCRACIA</p>
-          <div class="slogan">AGORA É LULA</div>
-          <p class="signature">BRASIL • DEMOCRACIA</p>
-        </div>
+      <div class="photo-buttons">
+        <label class="upload-button" for="galleryInput">
+          🖼️ Escolher da galeria
+        </label>
+        <label class="upload-button" for="cameraInput">
+          📸 Tirar uma selfie
+        </label>
       </div>
-    </div>
-  </div>
 
-  <section class="editor">
-    <p class="editor-title">✦ AJUSTE SUA FOTO</p>
-    <p class="editor-help">
-      Arraste a foto com o dedo para encontrar seu melhor enquadramento.
-      Use o controle para aproximar ou afastar.
-    </p>
-    <label class="zoom-row" for="zoom">
-      <span>ZOOM −</span>
-      <input id="zoom" type="range" min="1" max="3" step=".01" value="1">
-      <span>+</span>
-    </label>
-    <div class="controls">
-      <button class="secondary" id="center">◎ Centralizar</button>
-      <button class="secondary" id="resetZoom">↔ Zoom inicial</button>
-    </div>
-  </section>
+      <input id="galleryInput" type="file" accept="image/*">
+      <input id="cameraInput" type="file" accept="image/*" capture="user">
 
-  <input id="galleryInput" type="file" accept="image/*">
+      <div class="preview-title">
+        <p class="section-label">02 — Sua colagem</p>
+        <p>Arraste a foto para ajustar</p>
+      </div>
 
-  <div class="controls">
-    <button class="primary" id="start">📷 Abrir câmera</button>
-    <button class="secondary" id="capture">✨ Tirar foto</button>
-    <button class="secondary" id="gallery">🖼️ Escolher da galeria</button>
-    <button class="secondary" id="newPhoto">↻ Nova foto</button>
-    <button class="accent wide" id="save">⬇ GERAR E SALVAR FOTO</button>
-    <button class="primary wide" id="share">↗ COMPARTILHAR / GALERIA</button>
-  </div>
+      <div class="poster-frame">
+        <canvas
+          id="poster"
+          width="900"
+          height="1600"
+          aria-label="Prévia da colagem Brasil em Movimento">
+        </canvas>
+      </div>
 
-  <p id="status" role="status" aria-live="polite">
-    Escolha uma foto ou abra a câmera para começar.
-  </p>
+      <p class="hint">
+        💡 Arraste sua foto para ajustar o enquadramento.
+        Use o controle abaixo para ampliar ou reduzir.
+      </p>
 
-  <p class="note">
-    No iPhone, o site não pode gravar silenciosamente no app Fotos.
-    Toque em Compartilhar e escolha “Salvar imagem” no menu do iOS.
-    Em outros navegadores, as opções podem variar.
-  </p>
+      <div class="zoom-row">
+        <label for="zoom">Zoom da foto</label>
+        <input id="zoom" type="range" min="1" max="2.5" step="0.01" value="1">
+      </div>
 
-  <canvas id="canvas"></canvas>
-</main>
+      <p class="section-label">03 — Compartilhe</p>
 
-<script>
-const $ = id => document.getElementById(id);
+      <div class="actions">
+        <button id="resetButton" class="dark-button">
+          ↺ Centralizar foto
+        </button>
 
-const camera = $("camera");
-const photo = $("photo");
-const stage = $("stage");
-const canvas = $("canvas");
-const ctx = canvas.getContext("2d");
-const status = $("status");
-const zoomInput = $("zoom");
-const galleryInput = $("galleryInput");
-const hint = $("hint");
+        <button id="generateButton" class="yellow-button">
+          ✨ Gerar minha arte
+        </button>
 
-let stream = null;
-let source = null;
-let sourceW = 0;
-let sourceH = 0;
-let zoom = 1;
-let panX = 0;
-let panY = 0;
-let drag = null;
-let mirrored = false;
-let photoReady = false;
+        <button id="downloadButton" class="red-button">
+          ↓ Baixar imagem
+        </button>
 
-function message(text) {
-  status.textContent = text;
-}
+        <button id="shareButton" class="dark-button">
+          ↗ Compartilhar
+        </button>
 
-function stopCamera() {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-  camera.srcObject = null;
-}
+        <button id="shareInstagramButton" class="yellow-button wide">
+          📱 Preparar para o Instagram
+        </button>
+      </div>
 
-async function startCamera() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    message("Abra o site publicado por HTTPS para usar a câmera.");
-    return;
-  }
+      <p id="status" class="status" role="status" aria-live="polite">
+        Escolha uma foto para começar.
+      </p>
+    </section>
+  </main>
 
-  try {
-    stopCamera();
-    message("Solicitando acesso à câmera...");
+  <footer class="footer">
+    <strong>BRASIL • DEMOCRACIA • 13</strong><br>
+    Uma arte criada por você.
+  </footer>
 
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        facingMode: { ideal: "user" },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
+  <script>
+    const canvas = document.getElementById("poster");
+    const ctx = canvas.getContext("2d");
+
+    const galleryInput = document.getElementById("galleryInput");
+    const cameraInput = document.getElementById("cameraInput");
+    const zoomInput = document.getElementById("zoom");
+    const statusText = document.getElementById("status");
+
+    const W = canvas.width;
+    const H = canvas.height;
+
+    let personImage = null;
+    let lulaImage = null;
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function status(message) {
+      statusText.textContent = message;
+    }
+
+    // A foto agora é JPG: lula.jpg
+    const lula = new Image();
+
+    lula.onload = () => {
+      lulaImage = lula;
+      drawPoster();
+      status("Foto do Lula carregada! Escolha sua foto para personalizar.");
+    };
+
+    lula.onerror = () => {
+      lulaImage = null;
+      drawPoster();
+      status("Não encontrei lula.jpg. Confira o nome e a pasta do arquivo no GitHub.");
+    };
+
+    lula.src = "./lula.jpg";
+
+    function loadPersonPhoto(file) {
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        status("Escolha um arquivo de imagem.");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const image = new Image();
+
+        image.onload = () => {
+          personImage = image;
+          zoom = 1;
+          panX = 0;
+          panY = 0;
+          zoomInput.value = "1";
+          drawPoster();
+          status("Foto carregada! Arraste a imagem para ajustar.");
+        };
+
+        image.onerror = () => status("Não consegui abrir essa imagem. Tente outra foto.");
+        image.src = reader.result;
+      };
+
+      reader.onerror = () => status("Não foi possível ler o arquivo selecionado.");
+      reader.readAsDataURL(file);
+    }
+
+    galleryInput.addEventListener("change", event => {
+      loadPersonPhoto(event.target.files[0]);
+      event.target.value = "";
+    });
+
+    cameraInput.addEventListener("change", event => {
+      loadPersonPhoto(event.target.files[0]);
+      event.target.value = "";
+    });
+
+    zoomInput.addEventListener("input", () => {
+      zoom = Number(zoomInput.value);
+      drawPoster();
+    });
+
+    document.getElementById("resetButton").addEventListener("click", () => {
+      zoom = 1;
+      panX = 0;
+      panY = 0;
+      zoomInput.value = "1";
+      drawPoster();
+      status("Foto centralizada.");
+    });
+
+    document.getElementById("generateButton").addEventListener("click", () => {
+      drawPoster();
+      status("Sua arte está pronta para baixar ou compartilhar.");
+    });
+
+    function drawCover(image, x, y, width, height, extraZoom = 1, offsetX = 0, offsetY = 0) {
+      if (!image) return;
+
+      const scale = Math.max(width / image.width, height / image.height) * extraZoom;
+      const drawW = image.width * scale;
+      const drawH = image.height * scale;
+      const centerX = x + width / 2 + offsetX;
+      const centerY = y + height / 2 + offsetY;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.clip();
+
+      ctx.drawImage(
+        image,
+        centerX - drawW / 2,
+        centerY - drawH / 2,
+        drawW,
+        drawH
+      );
+
+      ctx.restore();
+    }
+
+    function drawStar(cx, cy, outerRadius, innerRadius, points = 5) {
+      ctx.beginPath();
+
+      for (let i = 0; i < points * 2; i++) {
+        const angle = -Math.PI / 2 + i * Math.PI / points;
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawLulaCutout(x, y, width, height, angle) {
+      ctx.save();
+      ctx.translate(x + width / 2, y + height / 2);
+      ctx.rotate(angle * Math.PI / 180);
+
+      ctx.fillStyle = "#ffe52b";
+      ctx.fillRect(-width / 2 - 7, -height / 2 - 7, width + 14, height + 14);
+
+      ctx.fillStyle = "#111";
+      ctx.fillRect(-width / 2 - 2, -height / 2 - 2, width + 4, height + 4);
+
+      if (lulaImage) {
+        drawCover(lulaImage, -width / 2, -height / 2, width, height);
+      } else {
+        ctx.fillStyle = "#ed101c";
+        ctx.fillRect(-width / 2, -height / 2, width, height);
+
+        ctx.fillStyle = "#fffaf0";
+        ctx.font = "900 36px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("LULA", 0, -5);
+        ctx.font = "900 17px Arial";
+        ctx.fillText("13", 0, 25);
+      }
+
+      ctx.restore();
+    }
+
+    function drawPoster() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "#ed101c";
+      ctx.fillRect(0, 0, W, H);
+
+      // Textura diagonal.
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = "#7e0010";
+
+      for (let i = -H; i < W; i += 42) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + 250, 0);
+        ctx.lineTo(i + 250 - H, H);
+        ctx.lineTo(i - H, H);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // Título.
+      ctx.fillStyle = "#fffaf0";
+      ctx.textAlign = "left";
+      ctx.font = "900 25px Arial";
+      ctx.fillText("BRASIL EM", 48, 70);
+
+      ctx.fillStyle = "#ffe52b";
+      ctx.font = "italic 900 54px Arial";
+      ctx.fillText("MOVIMENTO", 44, 126);
+
+      // Tarja superior.
+      ctx.save();
+      ctx.translate(450, 172);
+      ctx.rotate(-0.035);
+      ctx.fillStyle = "#111";
+      ctx.fillRect(-430, -25, 860, 60);
+      ctx.fillStyle = "#fffaf0";
+      ctx.font = "900 24px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("UMA VOZ • UM PAÍS • UM FUTURO", 0, 14);
+      ctx.restore();
+
+      // Fotos menores do Lula.
+      drawLulaCutout(38, 250, 185, 205, -7);
+      drawLulaCutout(672, 390, 177, 200, 8);
+
+      // Foto principal da pessoa.
+      const photoX = 115;
+      const photoY = 300;
+      const photoW = 670;
+      const photoH = 800;
+
+      ctx.save();
+      ctx.translate(12, 14);
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.moveTo(photoX + 22, photoY);
+      ctx.lineTo(photoX + photoW, photoY + 12);
+      ctx.lineTo(photoX + photoW - 18, photoY + photoH);
+      ctx.lineTo(photoX, photoY + photoH - 15);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(W / 2, photoY + photoH / 2);
+      ctx.rotate(-0.025);
+
+      ctx.fillStyle = "#ffe52b";
+      ctx.fillRect(-photoW / 2 - 12, -photoH / 2 - 12, photoW + 24, photoH + 24);
+
+      ctx.fillStyle = "#111";
+      ctx.fillRect(-photoW / 2 - 4, -photoH / 2 - 4, photoW + 8, photoH + 8);
+
+      if (personImage) {
+        drawCover(
+          personImage,
+          -photoW / 2,
+          -photoH / 2,
+          photoW,
+          photoH,
+          zoom,
+          panX,
+          panY
+        );
+      } else {
+        ctx.fillStyle = "#c90b17";
+        ctx.fillRect(-photoW / 2, -photoH / 2, photoW, photoH);
+
+        ctx.fillStyle = "#fffaf0";
+        ctx.textAlign = "center";
+        ctx.font = "900 40px Arial";
+        ctx.fillText("SUA FOTO", 0, -20);
+
+        ctx.font = "italic 900 23px Arial";
+        ctx.fillText("ENTRA AQUI", 0, 24);
+
+        ctx.font = "18px Arial";
+        ctx.fillText("Escolha uma imagem acima", 0, 70);
+      }
+
+      ctx.restore();
+
+      // Fotos menores na parte inferior.
+      drawLulaCutout(30, 780, 190, 205, 7);
+      drawLulaCutout(680, 860, 180, 200, -8);
+
+      // Estrela com número 13.
+      ctx.save();
+      ctx.translate(725, 255);
+      ctx.rotate(0.12);
+      ctx.fillStyle = "#ffe52b";
+      drawStar(0, 0, 70, 32);
+
+      ctx.fillStyle = "#111";
+      ctx.font = "1000 40px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("13", 0, 3);
+      ctx.restore();
+
+      // Faixa de campanha.
+      ctx.save();
+      ctx.translate(450, 1150);
+      ctx.rotate(-0.035);
+      ctx.fillStyle = "#111";
+      ctx.fillRect(-420, -42, 840, 95);
+      ctx.fillStyle = "#ffe52b";
+      ctx.font = "italic 1000 53px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("AGORA É LULA", 0, 25);
+      ctx.restore();
+
+      // Frases.
+      ctx.fillStyle = "#fffaf0";
+      ctx.textAlign = "left";
+      ctx.font = "italic 900 40px Arial";
+      ctx.fillText("PELA", 48, 1270);
+
+      ctx.fillStyle = "#ffe52b";
+      ctx.font = "italic 1000 63px Arial";
+      ctx.fillText("DEMOCRACIA", 45, 1330);
+
+      // Rodapé.
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 1390, W, 210);
+
+      ctx.fillStyle = "#fffaf0";
+      ctx.font = "900 25px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("ESPERANÇA • RESPEITO • FUTURO", 450, 1442);
+
+      ctx.fillStyle = "#ffe52b";
+      ctx.font = "1000 53px Arial";
+      ctx.fillText("BRASIL • 13", 450, 1510);
+
+      ctx.fillStyle = "#fffaf0";
+      ctx.font = "bold 17px Arial";
+      ctx.fillText("MINHA FOTO. MINHA VOZ.", 450, 1555);
+
+      // Borda.
+      ctx.strokeStyle = "#ffe52b";
+      ctx.lineWidth = 12;
+      ctx.strokeRect(7, 7, W - 14, H - 14);
+    }
+
+    // Arrastar com mouse ou toque.
+    canvas.addEventListener("pointerdown", event => {
+      if (!personImage) {
+        status("Escolha sua foto primeiro.");
+        return;
+      }
+
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+
+      if (canvas.setPointerCapture) {
+        canvas.setPointerCapture(event.pointerId);
       }
     });
 
-    camera.srcObject = stream;
-    await camera.play();
-    camera.style.display = "block";
-    photo.style.display = "none";
-    source = null;
-    photoReady = false;
-    stage.classList.remove("editing");
-    hint.hidden = true;
-    message("Câmera aberta! Posicione-se e toque em Tirar foto.");
-  } catch (error) {
-    stopCamera();
-    message("Não consegui abrir a câmera. Verifique a permissão do navegador.");
-  }
-}
+    canvas.addEventListener("pointermove", event => {
+      if (!dragging || !personImage) return;
 
-function setCanvasSize(w, h) {
-  const ratio = 9 / 16;
-  let height = Math.min(h, 2560);
-  let width = height * ratio;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
 
-  if (w / h < ratio) {
-    width = w;
-    height = w / ratio;
-  }
+      panX += (event.clientX - lastX) * scaleX;
+      panY += (event.clientY - lastY) * scaleY;
 
-  canvas.width = Math.round(width);
-  canvas.height = Math.round(height);
-}
+      lastX = event.clientX;
+      lastY = event.clientY;
 
-function drawPhoto() {
-  if (!source) return;
+      drawPoster();
+    });
 
-  const W = canvas.width;
-  const H = canvas.height;
-  const scale = Math.max(W / sourceW, H / sourceH) * zoom;
-  const drawW = sourceW * scale;
-  const drawH = sourceH * scale;
+    canvas.addEventListener("pointerup", () => {
+      dragging = false;
+    });
 
-  const maxX = Math.max(0, (drawW - W) / 2);
-  const maxY = Math.max(0, (drawH - H) / 2);
+    canvas.addEventListener("pointercancel", () => {
+      dragging = false;
+    });
 
-  panX = Math.max(-maxX, Math.min(maxX, panX));
-  panY = Math.max(-maxY, Math.min(maxY, panY));
+    function downloadImage() {
+      drawPoster();
 
-  ctx.save();
+      canvas.toBlob(blob => {
+        if (!blob) {
+          status("Não foi possível gerar a imagem. Tente novamente.");
+          return;
+        }
 
-  if (mirrored) {
-    ctx.translate(W, 0);
-    ctx.scale(-1, 1);
-  }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "brasil-em-movimento-13.png";
 
-  ctx.drawImage(
-    source,
-    (W - drawW) / 2 + panX,
-    (H - drawH) / 2 + panY,
-    drawW,
-    drawH
-  );
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
 
-  ctx.restore();
-}
-
-function drawFrame() {
-  const w = canvas.width;
-  const h = canvas.height;
-
-  ctx.strokeStyle = "#ff2538";
-  ctx.lineWidth = Math.max(8, w * .012);
-  ctx.strokeRect(
-    ctx.lineWidth / 2,
-    ctx.lineWidth / 2,
-    w - ctx.lineWidth,
-    h - ctx.lineWidth
-  );
-
-  const topH = h * .105;
-
-  ctx.fillStyle = "#c90018";
-  ctx.fillRect(0, 0, w, topH);
-
-  ctx.strokeStyle = "#ffd83d";
-  ctx.lineWidth = Math.max(3, w * .004);
-  ctx.strokeRect(w * .035, topH * .12, w * .93, topH * .76);
-
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#fff";
-  ctx.font = `900 ${Math.round(w * .075)}px Arial`;
-  ctx.fillText("★ LULA • 13 ★", w / 2, topH * .5);
-
-  const bottomH = h * .275;
-  const bottomY = h - bottomH;
-  const gradient = ctx.createLinearGradient(
-    0, bottomY - h * .08, 0, h
-  );
-
-  gradient.addColorStop(0, "rgba(133,0,13,0)");
-  gradient.addColorStop(.2, "rgba(133,0,13,.68)");
-  gradient.addColorStop(.48, "rgba(133,0,13,.94)");
-  gradient.addColorStop(1, "#85000d");
-
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, bottomY - h * .08, w, bottomH + h * .08);
-
-  ctx.fillStyle = "#ffd83d";
-  ctx.font = `900 ${Math.round(w * .085)}px Arial`;
-  ctx.fillText("ESPERANÇA", w / 2, bottomY + bottomH * .20, w * .92);
-
-  ctx.fillStyle = "#fff";
-  ctx.font = `900 ${Math.round(w * .065)}px Arial`;
-  ctx.fillText("PELA DEMOCRACIA", w / 2, bottomY + bottomH * .40, w * .92);
-
-  const boxY = bottomY + bottomH * .64;
-  const boxH = bottomH * .20;
-  const boxW = w * .76;
-
-  ctx.fillStyle = "#ffd83d";
-  ctx.fillRect((w - boxW) / 2, boxY - boxH / 2, boxW, boxH);
-
-  ctx.fillStyle = "#85000d";
-  ctx.font = `900 ${Math.round(w * .064)}px Arial`;
-  ctx.fillText("AGORA É LULA", w / 2, boxY, boxW - w * .04);
-
-  ctx.fillStyle = "#fff";
-  ctx.font = `800 ${Math.round(w * .030)}px Arial`;
-  ctx.fillText("BRASIL • DEMOCRACIA", w / 2, bottomY + bottomH * .89, w * .92);
-}
-
-function redraw() {
-  if (!source) return;
-
-  drawPhoto();
-  drawFrame();
-
-  photo.src = canvas.toDataURL("image/jpeg", .94);
-  photo.style.display = "block";
-  camera.style.display = "none";
-  photoReady = true;
-  hint.hidden = true;
-}
-
-function loadSource(img, w, h, mirror = false) {
-  source = img;
-  sourceW = w;
-  sourceH = h;
-  mirrored = mirror;
-  zoom = 1;
-  panX = 0;
-  panY = 0;
-  zoomInput.value = "1";
-
-  setCanvasSize(w, h);
-  redraw();
-  stage.classList.add("editing");
-  stopCamera();
-
-  message("Foto pronta! Arraste para ajustar. O enquadramento será salvo na arte.");
-}
-
-function capturePhoto() {
-  if (!stream || !camera.videoWidth) {
-    message("Abra a câmera primeiro ou escolha uma foto da galeria.");
-    return;
-  }
-
-  loadSource(camera, camera.videoWidth, camera.videoHeight, true);
-}
-
-function chooseGalleryPhoto() {
-  galleryInput.value = "";
-  galleryInput.click();
-}
-
-galleryInput.addEventListener("change", event => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-
-  if (!file.type.startsWith("image/")) {
-    message("Escolha uma imagem compatível.");
-    return;
-  }
-
-  const img = new Image();
-  const url = URL.createObjectURL(file);
-
-  img.onload = () => {
-    loadSource(img, img.naturalWidth, img.naturalHeight, false);
-    URL.revokeObjectURL(url);
-  };
-
-  img.onerror = () => {
-    URL.revokeObjectURL(url);
-    message("Não consegui abrir essa imagem. Tente JPG ou PNG.");
-  };
-
-  img.src = url;
-});
-
-zoomInput.addEventListener("input", () => {
-  zoom = Number(zoomInput.value);
-  redraw();
-});
-
-$("center").addEventListener("click", () => {
-  panX = 0;
-  panY = 0;
-  redraw();
-  message("Foto centralizada.");
-});
-
-$("resetZoom").addEventListener("click", () => {
-  zoom = 1;
-  zoomInput.value = "1";
-  redraw();
-  message("Zoom inicial restaurado.");
-});
-
-stage.addEventListener("pointerdown", event => {
-  if (!source) return;
-
-  drag = {
-    x: event.clientX,
-    y: event.clientY,
-    panX,
-    panY
-  };
-
-  stage.setPointerCapture(event.pointerId);
-});
-
-stage.addEventListener("pointermove", event => {
-  if (!drag || !source) return;
-
-  const rect = stage.getBoundingClientRect();
-  const sx = canvas.width / rect.width;
-  const sy = canvas.height / rect.height;
-
-  panX = drag.panX + (event.clientX - drag.x) * sx;
-  panY = drag.panY + (event.clientY - drag.y) * sy;
-
-  redraw();
-});
-
-function endDrag() {
-  drag = null;
-}
-
-stage.addEventListener("pointerup", endDrag);
-stage.addEventListener("pointercancel", endDrag);
-
-function newPhoto() {
-  stopCamera();
-  source = null;
-  photoReady = false;
-  photo.style.display = "none";
-  camera.style.display = "block";
-  hint.hidden = false;
-  stage.classList.remove("editing");
-  startCamera();
-}
-
-function savePhoto() {
-  if (!photoReady) {
-    message("Escolha uma foto ou tire uma foto primeiro.");
-    return;
-  }
-
-  canvas.toBlob(blob => {
-    if (!blob) {
-      message("Não foi possível gerar a imagem.");
-      return;
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        status("Imagem gerada! No iPhone, abra o compartilhamento para salvar em Fotos.");
+      }, "image/png");
     }
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "brasil-em-movimento.jpg";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    document.getElementById("downloadButton")
+      .addEventListener("click", downloadImage);
 
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    async function shareImage() {
+      drawPoster();
 
-    message("Imagem gerada! No iPhone, use Compartilhar e escolha Salvar imagem para guardá-la no Fotos.");
-  }, "image/jpeg", .96);
-}
-
-async function sharePhoto() {
-  if (!photoReady) {
-    message("Escolha ou tire uma foto primeiro.");
-    return;
-  }
-
-  canvas.toBlob(async blob => {
-    if (!blob) {
-      message("Não foi possível preparar a imagem.");
-      return;
-    }
-
-    const file = new File(
-      [blob],
-      "brasil-em-movimento.jpg",
-      { type: "image/jpeg" }
-    );
-
-    try {
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          title: "Brasil em Movimento",
-          text: "Minha foto pela democracia",
-          files: [file]
-        });
-
-        message("Menu aberto! Escolha Salvar imagem para guardar no app Fotos.");
-      } else {
-        savePhoto();
+      if (!personImage) {
+        status("Escolha sua foto antes de compartilhar.");
+        return;
       }
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        message("Tente novamente ou use o botão Gerar e salvar foto.");
-      }
+
+      canvas.toBlob(async blob => {
+        if (!blob) {
+          status("Não foi possível gerar a imagem.");
+          return;
+        }
+
+        const file = new File(
+          [blob],
+          "brasil-em-movimento-13.png",
+          { type: "image/png" }
+        );
+
+        try {
+          if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({ files: [file] })
+          ) {
+            await navigator.share({
+              files: [file],
+              title: "Brasil em Movimento",
+              text: "Minha foto, minha voz. 🇧🇷"
+            });
+
+            status("Compartilhamento aberto!");
+          } else {
+            downloadImage();
+            status("Baixe a imagem e selecione-a no Instagram para publicar.");
+          }
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            status("Não foi possível compartilhar. Tente baixar a imagem.");
+          }
+        }
+      }, "image/png");
     }
-  }, "image/jpeg", .96);
-}
 
-$("start").addEventListener("click", startCamera);
-$("capture").addEventListener("click", capturePhoto);
-$("gallery").addEventListener("click", chooseGalleryPhoto);
-$("newPhoto").addEventListener("click", newPhoto);
-$("save").addEventListener("click", savePhoto);
-$("share").addEventListener("click", sharePhoto);
+    document.getElementById("shareButton")
+      .addEventListener("click", shareImage);
 
-window.addEventListener("pagehide", stopCamera);
-</script>
+    document.getElementById("shareInstagramButton")
+      .addEventListener("click", shareImage);
+
+    drawPoster();
+  </script>
 </body>
 </html>
